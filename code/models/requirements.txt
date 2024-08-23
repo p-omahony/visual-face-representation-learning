@@ -1,0 +1,6 @@
+lightning
+torchvision
+torch
+numpy
+pandas
+zarr
