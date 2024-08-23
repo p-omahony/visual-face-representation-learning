@@ -1,0 +1,11 @@
+lightning
+torchvision
+torch
+numpy
+pandas
+matplotlib
+tensorboard
+opencv-python
+zarr
+umap-learn
+python-dotenv
