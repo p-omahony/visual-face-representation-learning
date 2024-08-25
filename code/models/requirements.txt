@@ -4,3 +4,7 @@ torch
 numpy
 pandas
 zarr
+umap-learn
+matplotlib
+seaborn
+wandb

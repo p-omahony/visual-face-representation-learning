@@ -5,12 +5,11 @@ import sys
 
 import lightning as L
 import torchvision.transforms as T
+from dataset import FaceScrubTriplet
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+from model import FaceLearnerTriplet
 from torch.utils.data import DataLoader
-
-from dataset import FaceScrub
-from model import FaceLearner
 
 PREFIX = '/opt/ml/'
 CHANNEL_NAME = 'training'
@@ -26,16 +25,16 @@ def train():
         T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
-    train_ds = FaceScrub('/opt/ml/input/data/training', transforms=transform_fn)
+    train_ds = FaceScrubTriplet('/opt/ml/input/data/training', transforms=transform_fn)
     train_loader = DataLoader(
         train_ds,
         shuffle=True,
-        batch_size=64,
+        batch_size=128,
         num_workers=2,
         persistent_workers=True
     )
 
-    model = FaceLearner(2.)
+    model = FaceLearnerTriplet(2.)
 
     early_stop_callback = EarlyStopping(
         monitor="train_loss",
@@ -49,17 +48,17 @@ def train():
         filename='{epoch}-{train_loss:.2f}',
         monitor='train_loss',
         mode='min',
-        save_top_k=3,
+        save_top_k=1,
         save_last=True
     )
 
     trainer = L.Trainer(
         accelerator='cuda',
-        num_sanity_val_steps=10,
+        num_sanity_val_steps=25,
         callbacks=[early_stop_callback, checkpoint_callback],
         logger=False,
         enable_progress_bar=False,
-        max_epochs=2
+        max_epochs=3
     )
     trainer.fit(model, train_dataloaders=train_loader)
 
