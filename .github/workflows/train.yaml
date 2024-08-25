@@ -3,8 +3,8 @@ name: Run Script CI/CD
 # Controls when the action will run
 on:
   push:
-    branches:
-      - experiments  # Triggers the workflow on push to the main branch
+    paths:
+      - code/models/**  # Triggers the workflow on push to the main branch
 
 env:
   AWS_REGION: eu-west-3
