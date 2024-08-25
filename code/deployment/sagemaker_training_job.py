@@ -29,4 +29,4 @@ if __name__ == '__main__':
         sagemaker_session=sagemaker_session
     )
 
-    model.fit(DATA_LOCATION)
+    model.fit(DATA_LOCATION, wait=False)
