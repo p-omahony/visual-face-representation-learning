@@ -33,3 +33,6 @@ jobs:
 
       - name: Build Docker image
         run: docker build --platform linux/amd64 -t face-learner-nonproduction-training code/models/
+
+      - name: Push image to ECR repo
+        run: docker tag face-learner-nonproduction-training:latest ${{ secrets.IMAGE_ECR_URI }} | docker push ${{ secrets.IMAGE_ECR_URI }}
