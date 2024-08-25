@@ -24,4 +24,4 @@ jobs:
       #   run: pip install -r requirements.txt  # If you have a requirements.txt file
 
       - name: Run the script
-        run: python tests/main2.py  # Replace with your script
+        run: python tests/main.py  # Replace with your script
