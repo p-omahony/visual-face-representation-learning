@@ -28,6 +28,5 @@ jobs:
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: Sts GetCallerIdentity
-        run: |
-          aws sts get-caller-identity
+      - name: Login to ECR
+        run: aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin ${{ secrets.ECR_ACCOUNT }}
