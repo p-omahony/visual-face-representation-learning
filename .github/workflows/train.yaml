@@ -6,22 +6,24 @@ on:
     branches:
       - experiments  # Triggers the workflow on push to the main branch
 
-# The jobs to be run
+env:
+  AWS_REGION: eu-west-3
+   
+permissions:
+      id-token: write
+      contents: read
+
 jobs:
-  run-script:
-    runs-on: ubuntu-latest  # Specify the OS to run the job
+  build:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          python-version: '3.x'  # Replace with your desired Python version
-
-      # - name: Install dependencies
-      #   run: pip install -r requirements.txt  # If you have a requirements.txt file
-
-      - name: Run the script
-        run: python tests/main.py  # Replace with your script
+          role-to-assume: ${{ secrets.ACTIONS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
