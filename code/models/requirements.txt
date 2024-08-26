@@ -8,3 +8,4 @@ umap-learn
 matplotlib
 seaborn
 wandb
+ml-collections

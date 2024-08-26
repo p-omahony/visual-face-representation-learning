@@ -76,14 +76,16 @@ class FaceLearner(L.LightningModule):
 
 
 class FaceLearnerTriplet(L.LightningModule):
-    def __init__(self, loss_margin):
+    def __init__(self, hyperparameters):
         super(FaceLearnerTriplet, self).__init__()
-        self.resnet = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+        self.hyperparameters = hyperparameters
+        if self.hyperparameters.model.pretrained:
+            self.resnet = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
+        else:
+            self.resnet = resnet18(weights=None)
         self.resnet.fc = nn.Identity()
 
         self.start_time = 0.
-
-        self.loss_margin = loss_margin
 
         self.training_step_losses = []
         self.validation_step_outs = []
@@ -98,7 +100,7 @@ class FaceLearnerTriplet(L.LightningModule):
     def criterion(self, anchor_emb, positive_emb, negative_emb):
         distance_positive = (anchor_emb - positive_emb).pow(2).sum(1)
         distance_negative = (anchor_emb - negative_emb).pow(2).sum(1)
-        losses = torch.relu(distance_positive - distance_negative + self.loss_margin)
+        losses = torch.relu(distance_positive - distance_negative + self.hyperparameters.loss.margin)
         return losses.mean()
 
     def training_step(self, batch, batch_idx):
@@ -157,17 +159,19 @@ class FaceLearnerTriplet(L.LightningModule):
     #     self.validation_step_labels.clear()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
-        scheduler = {
-            'scheduler': ReduceLROnPlateau(
-                            optimizer,
-                            mode='min',
-                            factor=0.1,
-                            patience=4,
-                            verbose=True
-                        ),
-            'monitor': 'train_loss',  # The metric to monitor
-            'interval': 'epoch',  # How often to update the learning rate
-            'frequency': 1  # How often to check the metric
-        }
-        return {'optimizer': optimizer, 'lr_scheduler': scheduler}
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.hyperparameters.training.learning_rate.start_value)
+        if self.hyperparameters.training.learning_rate.reduce:
+            scheduler = {
+                'scheduler': ReduceLROnPlateau(
+                                optimizer,
+                                mode='min',
+                                factor=self.hyperparameters.training.learning_rate.reduce_factor,
+                                patience=self.hyperparameters.training.learning_rate.reduce_patience,
+                                verbose=True
+                            ),
+                'monitor': 'train_loss',  # The metric to monitor
+                'interval': 'epoch',  # How often to update the learning rate
+                'frequency': 1  # How often to check the metric
+            }
+            return {'optimizer': optimizer, 'lr_scheduler': scheduler}
+        return optimizer
