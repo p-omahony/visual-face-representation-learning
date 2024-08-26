@@ -100,7 +100,8 @@ class FaceLearnerTriplet(L.LightningModule):
     def criterion(self, anchor_emb, positive_emb, negative_emb):
         distance_positive = (anchor_emb - positive_emb).pow(2).sum(1)
         distance_negative = (anchor_emb - negative_emb).pow(2).sum(1)
-        losses = torch.relu(distance_positive - distance_negative + self.hyperparameters.loss.margin)
+        margin = self.hyperparameters.training.loss.margin
+        losses = torch.relu(distance_positive - distance_negative + margin)
         return losses.mean()
 
     def training_step(self, batch, batch_idx):
@@ -159,7 +160,10 @@ class FaceLearnerTriplet(L.LightningModule):
     #     self.validation_step_labels.clear()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.hyperparameters.training.learning_rate.start_value)
+        optimizer = torch.optim.Adam(
+            self.parameters(),
+            lr=self.hyperparameters.training.learning_rate.start_value
+        )
         if self.hyperparameters.training.learning_rate.reduce:
             scheduler = {
                 'scheduler': ReduceLROnPlateau(
