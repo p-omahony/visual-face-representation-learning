@@ -79,7 +79,7 @@ class FaceLearnerTriplet(L.LightningModule):
     def __init__(self, hyperparameters):
         super(FaceLearnerTriplet, self).__init__()
         self.hyperparameters = hyperparameters
-        self.save_hyperparameters(self.hyperparameters)
+        self.save_hyperparameters(self.hyperparameters.to_dict())
         
         if self.hyperparameters.model.pretrained:
             self.resnet = resnet18(weights=ResNet18_Weights.IMAGENET1K_V1)
