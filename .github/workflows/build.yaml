@@ -1,0 +1,38 @@
+name: Run Script CI/CD
+
+# Controls when the action will run
+on:
+  push:
+    paths:
+      - code/models/**  # Triggers the workflow on push to the main branch
+
+env:
+  AWS_REGION: eu-west-3
+   
+permissions:
+      id-token: write
+      contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ACTIONS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to ECR
+        run: aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin ${{ secrets.ECR_ACCOUNT }}
+
+      - name: Build Docker image
+        run: docker build --platform linux/amd64 -t face-learner-nonproduction-training code/models/
+
+      - name: Push image to ECR repo
+        run: docker tag face-learner-nonproduction-training:latest ${{ secrets.IMAGE_ECR_URI }} | docker push ${{ secrets.IMAGE_ECR_URI }}

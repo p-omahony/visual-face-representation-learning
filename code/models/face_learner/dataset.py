@@ -43,3 +43,41 @@ class FaceScrub(Dataset):
             return anchor_im, comp_im, target
 
         return anchor_im
+
+
+class FaceScrubTriplet(Dataset):
+    def __init__(self, data_path, train=True, transforms=None) -> None:
+        self.data_path = Path(data_path)
+        self.labels = zarr.open(self.data_path / Path('labels.zarr'), 'r')[:]
+        self.ims = zarr.open(self.data_path / Path('ims.zarr'), 'r')[:]
+
+        self.train = train
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        anchor_im = self.ims[idx]
+        anchor_label = self.labels[idx]
+
+        positives_ims_indices = np.where(self.labels == anchor_label)[0]
+        negatives_ims_indices = np.where(self.labels != anchor_label)[0]
+
+        if self.transforms:
+            anchor_im = self.transforms(anchor_im)
+
+        if self.train:
+            rdm_positive_idx = np.random.choice(positives_ims_indices)
+            positive_im = self.ims[rdm_positive_idx]
+
+            rdm_negative_idx = np.random.choice(negatives_ims_indices)
+            negative_im = self.ims[rdm_negative_idx]
+
+            if self.transforms:
+                positive_im = self.transforms(positive_im)
+                negative_im = self.transforms(negative_im)
+
+            return anchor_im, positive_im, negative_im
+
+        return anchor_im
