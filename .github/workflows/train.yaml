@@ -4,6 +4,13 @@ name: Manual Trigger Workflow
 on:
   workflow_dispatch:  # Enables the manual trigger
 
+env:
+  AWS_REGION: eu-west-3
+   
+permissions:
+      id-token: write
+      contents: read
+
 jobs:
   run-static-job:
     runs-on: ubuntu-latest
@@ -11,6 +18,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ACTIONS_ROLE_ARN }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
