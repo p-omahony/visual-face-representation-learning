@@ -70,7 +70,6 @@ def train():
         num_sanity_val_steps=25,
         logger=wandb_logger,
         callbacks=[early_stop_callback, checkpoint_callback],
-        logger=False,
         enable_progress_bar=False,
         max_epochs=3
     )
