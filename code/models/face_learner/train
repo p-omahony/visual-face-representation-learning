@@ -5,13 +5,16 @@ import sys
 
 import lightning as L
 import torchvision.transforms as T
+import wandb
+from config import get_config
 from dataset import FaceScrubTriplet
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+from lightning.pytorch.loggers import WandbLogger
 from model import FaceLearnerTriplet
 from torch.utils.data import DataLoader
 
-from config import get_config
+WANDB_KEY = os.getenv('WANDB_KEY')
 
 PREFIX = '/opt/ml/'
 CHANNEL_NAME = 'training'
@@ -56,9 +59,16 @@ def train():
         save_last=True
     )
 
+    wandb.login(key=WANDB_KEY)
+    wandb_logger = WandbLogger(
+        project='visual-face-representation-learning',
+        log_model="all",
+    )
+
     trainer = L.Trainer(
         accelerator='cuda',
         num_sanity_val_steps=25,
+        logger=wandb_logger,
         callbacks=[early_stop_callback, checkpoint_callback],
         logger=False,
         enable_progress_bar=False,

@@ -32,7 +32,7 @@ jobs:
         run: aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin ${{ secrets.ECR_ACCOUNT }}
 
       - name: Build Docker image
-        run: docker build --platform linux/amd64 -t face-learner-nonproduction-training code/models/
+        run: docker build --platform linux/amd64 --build-arg WANDB_KEY=${{ secrets.WANDB_KEY }} -t face-learner-nonproduction-training code/models/
 
       - name: Push image to ECR repo
         run: docker tag face-learner-nonproduction-training:latest ${{ secrets.IMAGE_ECR_URI }} | docker push ${{ secrets.IMAGE_ECR_URI }}
