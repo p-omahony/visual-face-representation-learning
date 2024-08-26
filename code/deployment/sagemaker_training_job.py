@@ -18,7 +18,7 @@ DATA_LOCATION = os.getenv('SAGEMAKER_TJ_INPUT_DATA_PATH')
 OUTPUT_PATH = os.getenv('SAGEMAKER_TJ_OUTPUT_PATH')
 
 if __name__ == '__main__':
-    boto_session = boto3.session.Session(profile_name=AWS_PROFILE_NAME)
+    boto_session = boto3.session.Session()
     sagemaker_session = sagemaker.Session(boto_session=boto_session)
     model = Estimator(
         IMAGE,
