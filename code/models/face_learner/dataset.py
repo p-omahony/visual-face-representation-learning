@@ -95,7 +95,7 @@ class Amigos(Dataset):
         self.transforms = transforms
 
     def __len__(self):
-        return len(self.raw_images)
+        return len(self.labels)
 
     def __getitem__(self, idx):
         im = self.ims[idx]
