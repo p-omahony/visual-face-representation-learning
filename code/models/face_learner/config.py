@@ -14,7 +14,7 @@ def get_config():
     # Training configuration
     config.training = ConfigDict()
     config.training.batch_size = 64
-    config.training.epochs = 1
+    config.training.epochs = 20
     config.training.loss = ConfigDict()
     config.training.loss.name = 'triplet'
     config.training.loss.margin = 2.
