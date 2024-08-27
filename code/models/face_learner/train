@@ -63,7 +63,7 @@ def train():
     )
     wandb_logger.download_artifact(
         "pomahony/visual-face-representation-learning/model-face-learner-nonproduction-training-2024-08-27-12-20-40-702-2qsosk-ip-10-0-156-91.eu-west-3.compute.internal:v20",
-        save_dir="/opt/ml/model/model.ckpt"
+        save_dir="/opt/ml/model"
     )
     
     model = FaceLearnerTriplet.load_from_checkpoint(
