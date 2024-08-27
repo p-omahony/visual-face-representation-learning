@@ -160,7 +160,7 @@ class FaceLearnerTriplet(L.LightningModule):
         buffer.seek(0)
         pil_image = Image.open(buffer)
 
-        self.log_image(f"umap_plot_{self.current_epoch}.png", images=[pil_image])
+        self.logger.log_image(f"umap_plot_{self.current_epoch}.png", images=[pil_image])
 
         self.validation_step_outs.clear()
         self.validation_step_labels.clear()
