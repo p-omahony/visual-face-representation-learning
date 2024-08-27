@@ -2,14 +2,15 @@ from pathlib import Path
 
 import numpy as np
 import zarr
+from PIL import Image
 from torch.utils.data import Dataset
 
 
 class FaceScrub(Dataset):
     def __init__(self, data_path, train=True, transforms=None) -> None:
         self.data_path = Path(data_path)
-        self.labels = zarr.open(self.data_path / Path('labels.zarr'), 'r')[:]
-        self.ims = zarr.open(self.data_path / Path('ims.zarr'), 'r')
+        self.labels = zarr.open(self.data_path / Path("labels.zarr"), "r")[:]
+        self.ims = zarr.open(self.data_path / Path("ims.zarr"), "r")
 
         self.train = train
         self.transforms = transforms
@@ -33,7 +34,7 @@ class FaceScrub(Dataset):
             if target == 0:
                 rdm_idx = np.random.choice(positives_ims_indices)
                 comp_im = self.ims[rdm_idx]
-            else :
+            else:
                 rdm_idx = np.random.choice(negatives_ims_indices)
                 comp_im = self.ims[rdm_idx]
 
@@ -48,8 +49,8 @@ class FaceScrub(Dataset):
 class FaceScrubTriplet(Dataset):
     def __init__(self, data_path, train=True, transforms=None) -> None:
         self.data_path = Path(data_path)
-        self.labels = zarr.open(self.data_path / Path('labels.zarr'), 'r')[:]
-        self.ims = zarr.open(self.data_path / Path('ims.zarr'), 'r')[:]
+        self.labels = zarr.open(self.data_path / Path("labels.zarr"), "r")[:]
+        self.ims = zarr.open(self.data_path / Path("ims.zarr"), "r")[:]
 
         self.train = train
         self.transforms = transforms
@@ -81,3 +82,25 @@ class FaceScrubTriplet(Dataset):
             return anchor_im, positive_im, negative_im
 
         return anchor_im
+
+
+class Amigos(Dataset):
+    def __init__(self, images_array_path, transforms=None):
+        self.images_array_path = images_array_path
+        self.ims = zarr.open(self.images_array_path / Path("val_ims.zarr"), "r")[:]
+        self.labels = zarr.open(
+            self.images_array_path / Path("val_labels.zarr"), "r"
+        )[:]
+
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.raw_images)
+
+    def __getitem__(self, idx):
+        im = self.ims[idx]
+        label = self.labels[idx]
+        if self.transforms:
+            im = self.transforms(im)
+
+        return im, label
