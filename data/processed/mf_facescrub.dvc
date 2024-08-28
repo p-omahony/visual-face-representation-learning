@@ -1,6 +1,6 @@
 outs:
-- md5: 43c77db7eb6a4e1d86e9b71f54326283.dir
-  size: 3205861466
-  nfiles: 22716
+- md5: e42bc06903219bf506f14f08f651f5d4.dir
+  size: 14408382
+  nfiles: 104
   hash: md5
   path: mf_facescrub
