@@ -1,6 +1,7 @@
 .env
 venv/
 .terraform/
-data/
+data/processed/*
+!data/processed/*.dvc
 
 .DS_Store
