@@ -8,7 +8,7 @@ def get_config():
     config.model.backbone = 'resnet18'
     config.model.pretrained = True  # Whether to use a pretrained model
     config.model.projector = ConfigDict()
-    config.model.projector.active = False
+    config.model.projector.active = True
     config.model.projector.embed_dim = 4096
 
     # Training configuration

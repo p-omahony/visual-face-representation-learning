@@ -85,6 +85,19 @@ class FaceLearnerTriplet(L.LightningModule):
         else:
             self.resnet = resnet18(weights=None)
         self.resnet.fc = nn.Identity()
+        
+        if self.hyperparameters.model.projector.active:
+            embed_dim = self.hyperparameters.model.projector.embed_dim
+            self.projector = nn.Sequential(
+                nn.BatchNorm1d(512),
+                nn.Linear(512, embed_dim),
+                nn.ReLU(),
+                nn.Dropout(0.2),
+                nn.Linear(embed_dim, embed_dim),
+                nn.ReLU(),
+                nn.Dropout(0.2),
+                nn.Linear(embed_dim, embed_dim),
+            )
 
         self.start_time = 0.0
 
@@ -95,7 +108,8 @@ class FaceLearnerTriplet(L.LightningModule):
 
     def forward(self, im):
         out = self.resnet(im)
-        # out = self.projector(out)
+        if self.hyperparameters.model.projector.active:
+            out = self.projector(out)
 
         return out
 
