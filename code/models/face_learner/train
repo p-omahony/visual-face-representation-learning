@@ -28,9 +28,12 @@ cfg = get_config()
 
 
 def train():
-    transform_fn = T.Compose(
-        [T.ToTensor(), T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])]
-    )
+    transform_fn = T.Compose([
+        T.RandomHorizontalFlip(p=0.5),
+        T.RandomRotation(15),
+        T.ToTensor(),
+        T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
 
     train_ds = FaceScrubTriplet("/opt/ml/input/data/training", transforms=transform_fn)
     train_loader = DataLoader(

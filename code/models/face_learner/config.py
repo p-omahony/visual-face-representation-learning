@@ -8,8 +8,8 @@ def get_config():
     config.model.backbone = 'resnet18'
     config.model.pretrained = True  # Whether to use a pretrained model
     config.model.projector = ConfigDict()
-    config.model.projector.active = True
-    config.model.projector.embed_dim = 4096
+    config.model.projector.active = False
+    config.model.projector.embed_dim = 2048
 
     # Training configuration
     config.training = ConfigDict()
@@ -35,8 +35,8 @@ def get_config():
     # Data augmentation (if needed)
     config.augmentation = ConfigDict()
     config.augmentation.random_crop = False
-    config.augmentation.random_flip = False
-    config.augmentation.random_rotation = False
+    config.augmentation.random_flip = 0.5
+    config.augmentation.random_rotation = 15
     config.augmentation.gaussian_blur = False
 
     # Miscellaneous configurations
