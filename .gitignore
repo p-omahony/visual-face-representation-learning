@@ -1,7 +1,6 @@
 .env
 venv/
 .terraform/
-data/processed/*
-!data/processed/*.dvc
-
+__pycache__/
 .DS_Store
+.dvc/

@@ -7,7 +7,7 @@ import lightning as L
 import torchvision.transforms as T
 import wandb
 from config import get_config
-from dataset import Amigos, FaceScrubTriplet
+from dataset import FaceScrubTriplet
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
@@ -37,10 +37,10 @@ def train():
         train_ds, shuffle=True, batch_size=128, num_workers=2, persistent_workers=True
     )
 
-    val_ds = Amigos("/opt/ml/input/data/training", transforms=transform_fn)
+    val_ds = FaceScrubTriplet(
+        "/opt/ml/input/data/training", train=False, transforms=transform_fn
+    )
     val_loader = DataLoader(val_ds, shuffle=False, batch_size=1)
-
-    # model = FaceLearnerTriplet(cfg)
 
     early_stop_callback = EarlyStopping(
         monitor="train_loss", min_delta=1e-4, patience=10, verbose=False, mode="min"
@@ -56,20 +56,9 @@ def train():
 
     wandb.login(key=WANDB_KEY)
     wandb_logger = WandbLogger(
-        project="visual-face-representation-learning",
-        log_model="all",
-        name="face-learner-nonproduction-training-2024-08-27-12-20-40-702-2qsosk-ip-10-0-156-91.eu-west-3.compute.internal",
-        resume="allow"
+        project="visual-face-representation-learning", log_model="all"
     )
-    wandb_logger.download_artifact(
-        "pomahony/visual-face-representation-learning/model-face-learner-nonproduction-training-2024-08-27-12-20-40-702-2qsosk-ip-10-0-156-91.eu-west-3.compute.internal:v20",
-        save_dir="/opt/ml/model"
-    )
-    
-    model = FaceLearnerTriplet.load_from_checkpoint(
-        '/opt/ml/model/model.ckpt',
-        hyperparameters=cfg
-    )
+    model = FaceLearnerTriplet(cfg)
 
     trainer = L.Trainer(
         accelerator="cuda",

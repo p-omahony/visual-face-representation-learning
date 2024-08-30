@@ -2,7 +2,6 @@ from pathlib import Path
 
 import numpy as np
 import zarr
-from PIL import Image
 from torch.utils.data import Dataset
 
 
@@ -49,8 +48,12 @@ class FaceScrub(Dataset):
 class FaceScrubTriplet(Dataset):
     def __init__(self, data_path, train=True, transforms=None) -> None:
         self.data_path = Path(data_path)
-        self.labels = zarr.open(self.data_path / Path("labels.zarr"), "r")[:]
-        self.ims = zarr.open(self.data_path / Path("ims.zarr"), "r")[:]
+        if train:
+            self.labels = zarr.open(self.data_path / Path("labels.zarr"), "r")[:]
+            self.ims = zarr.open(self.data_path / Path("ims.zarr"), "r")[:]
+        else:
+            self.labels = zarr.open(self.data_path / Path("val_labels.zarr"), "r")[:]
+            self.ims = zarr.open(self.data_path / Path("val_ims.zarr"), "r")[:]
 
         self.train = train
         self.transforms = transforms
@@ -65,32 +68,27 @@ class FaceScrubTriplet(Dataset):
         positives_ims_indices = np.where(self.labels == anchor_label)[0]
         negatives_ims_indices = np.where(self.labels != anchor_label)[0]
 
+        rdm_positive_idx = np.random.choice(positives_ims_indices)
+        positive_im = self.ims[rdm_positive_idx]
+
+        rdm_negative_idx = np.random.choice(negatives_ims_indices)
+        negative_im = self.ims[rdm_negative_idx]
+
         if self.transforms:
             anchor_im = self.transforms(anchor_im)
+            positive_im = self.transforms(positive_im)
+            negative_im = self.transforms(negative_im)
 
-        if self.train:
-            rdm_positive_idx = np.random.choice(positives_ims_indices)
-            positive_im = self.ims[rdm_positive_idx]
-
-            rdm_negative_idx = np.random.choice(negatives_ims_indices)
-            negative_im = self.ims[rdm_negative_idx]
-
-            if self.transforms:
-                positive_im = self.transforms(positive_im)
-                negative_im = self.transforms(negative_im)
-
-            return anchor_im, positive_im, negative_im
-
-        return anchor_im
+        return anchor_im, positive_im, negative_im
 
 
 class Amigos(Dataset):
     def __init__(self, images_array_path, transforms=None):
         self.images_array_path = images_array_path
         self.ims = zarr.open(self.images_array_path / Path("val_ims.zarr"), "r")[:]
-        self.labels = zarr.open(
-            self.images_array_path / Path("val_labels.zarr"), "r"
-        )[:]
+        self.labels = zarr.open(self.images_array_path / Path("val_labels.zarr"), "r")[
+            :
+        ]
 
         self.transforms = transforms
 

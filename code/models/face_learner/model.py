@@ -1,15 +1,9 @@
-import io
 import time
 
 import boto3
 import lightning as L
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
 import torch
 import torch.nn as nn
-import umap
-from PIL import Image
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchvision.models import ResNet18_Weights, resnet18
 
@@ -25,7 +19,7 @@ class FaceLearner(L.LightningModule):
         self.contrastive_loss_margin = contrastive_loss_margin
 
         self.training_step_losses = []
-        self.validation_step_outs = []
+        self.validation_step_losses = []
         self.validation_step_labels = []
 
         self.start_time = 0.0
@@ -95,7 +89,8 @@ class FaceLearnerTriplet(L.LightningModule):
         self.start_time = 0.0
 
         self.training_step_losses = []
-        self.validation_step_outs = []
+        self.validation_step_losses = []
+        self.validation_step_losses_hol = []
         self.validation_step_labels = []
 
     def forward(self, im):
@@ -125,11 +120,15 @@ class FaceLearnerTriplet(L.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, y = batch
-        out = self.resnet(x)
+        anchor_im, positive_im, negative_im = batch
 
-        self.validation_step_outs.append(out.detach().cpu().numpy())
-        self.validation_step_labels.append(y)
+        anchor_emb = self.forward(anchor_im)
+        positive_emb = self.forward(positive_im)
+        negative_emb = self.forward(negative_im)
+
+        loss = self.criterion(anchor_emb, positive_emb, negative_emb)
+
+        self.validation_step_losses.append(loss)
 
     def on_train_epoch_start(self):
         self.start_time = time.time()
@@ -147,23 +146,13 @@ class FaceLearnerTriplet(L.LightningModule):
         self.training_step_losses.clear()
 
     def on_validation_epoch_end(self):
-        embeddings = np.squeeze(self.validation_step_outs)
-        y_trues = np.squeeze(self.validation_step_labels)
-        mapper = umap.UMAP(n_components=2).fit(embeddings)
+        avg_loss = torch.stack(self.validation_step_losses).mean()
 
-        buffer = io.BytesIO()
-        plt.figure(figsize=(10, 10))
-        scatter = sns.scatterplot(
-            x=mapper.embedding_[:, 0], y=mapper.embedding_[:, 1], hue=y_trues
-        )
-        plt.savefig(buffer, format="png", dpi=300)
-        buffer.seek(0)
-        pil_image = Image.open(buffer)
+        print(f"Val Epoch {self.current_epoch} - val_loss={avg_loss}")
 
-        self.logger.log_image(f"umap_plot.png", images=[pil_image])
+        self.log("val_loss", avg_loss, prog_bar=True, logger=True)
 
-        self.validation_step_outs.clear()
-        self.validation_step_labels.clear()
+        self.validation_step_losses.clear()
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(
