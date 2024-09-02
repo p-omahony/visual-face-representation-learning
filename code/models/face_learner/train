@@ -29,6 +29,7 @@ cfg = get_config()
 
 def train():
     transform_fn = T.Compose([
+        T.ToPILImage(),
         T.RandomHorizontalFlip(p=0.5),
         T.RandomRotation(15),
         T.ToTensor(),
