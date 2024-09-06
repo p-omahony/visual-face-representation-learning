@@ -10,3 +10,5 @@ seaborn
 wandb
 ml-collections
 Pillow
+dvclive
+dvclive[image]

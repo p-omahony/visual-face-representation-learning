@@ -12,7 +12,9 @@ from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 from lightning.pytorch.loggers import WandbLogger
 from model import FaceLearnerTriplet
+from dvclive import Live
 from torch.utils.data import DataLoader
+from dvclive.lightning import DVCLiveLogger
 
 WANDB_KEY = os.getenv("WANDB_KEY")
 
@@ -58,16 +60,17 @@ def train():
         save_last=True,
     )
 
-    wandb.login(key=WANDB_KEY)
-    wandb_logger = WandbLogger(
-        project="visual-face-representation-learning", log_model="all"
+    exp_data_path =  os.path.join(model_path, 'dvclive')
+    dvc_logger = DVCLiveLogger(
+        log_model=True,
+        experiment=Live(exp_data_path, report='html')
     )
     model = FaceLearnerTriplet(cfg)
 
     trainer = L.Trainer(
         accelerator="cuda",
         num_sanity_val_steps=25,
-        logger=wandb_logger,
+        logger=dvc_logger,
         callbacks=[early_stop_callback, checkpoint_callback],
         enable_progress_bar=False,
         max_epochs=cfg.training.epochs,
