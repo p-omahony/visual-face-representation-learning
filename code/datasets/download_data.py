@@ -68,17 +68,18 @@ def clean_downloaded_images(downloaded_images: List[str]):
 
 def main(min_identities, max_identities):
     """Run download pipeline."""
-    download_data = read_raw_data(
-        './data/raw/faceScrub/facescrub_actors.txt',
-        min_identities,
-        max_identities
-    )
-    print('Downloading images...')
-    downloaded_images = download_images(
-        './data/processed/face_scrub',
-        download_data
-    )
-    print('Download completed successfully!')
+    # download_data = read_raw_data(
+    #     './data/raw/faceScrub/facescrub_actors.txt',
+    #     min_identities,
+    #     max_identities
+    # )
+    # print('Downloading images...')
+    # downloaded_images = download_images(
+    #     './data/processed/face_scrub',
+    #     download_data
+    # )
+    # print('Download completed successfully!')
+    downloaded_images = [f for f in Path('./data/processed/face_scrub').rglob("*") if f.is_file()]
     print('Cleaning downloaded images...')
     clean_downloaded_images(downloaded_images)
     print('Clean completed successfully!')

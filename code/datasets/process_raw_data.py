@@ -23,7 +23,7 @@ def get_face(images_root_path: str, image_metadata: DataFrame):
     bbox = [int(e) for e in image_metadata['bbox'].split(',')]
     label = image_metadata['name'].strip().replace(' ', '_')
 
-    im_path = os.path.join(images_root_path, label, im_id, ext)
+    im_path = os.path.join(images_root_path, label, im_id + ext)
     im = Image.open(im_path)
     im_transformed = im.crop(bbox).resize((IM_SIZE, IM_SIZE)).convert('RGB')
 
@@ -57,9 +57,10 @@ def extract_faces(metadata_df: DataFrame) -> Tuple[NDArray, NDArray]:
     for identity in tqdm(identities):
         identity_data = metadata_df[metadata_df['name'] == identity]
         for row in identity_data.iterrows():
-            face, _ = get_face('../data/processed/face_scrub', row[1])
+            face, label = get_face('./data/processed/face_scrub', row[1])
             faces.append(np.array(face))
-            labels.append(identity.encode('utf-8'))
+            labels.append(label.encode('utf-8'))
+
     faces = np.array(faces)
     labels = np.array(labels)
 
@@ -82,20 +83,26 @@ def create_dataset(faces_ims: NDArray, labels, save_path: NDArray) -> None:
         dtype='uint8'
     )
 
-    z_labels[:], z_ims[:] = z_labels, faces_ims
+    z_labels[:], z_ims[:] = labels, faces_ims
 
 
 def main():
     """"Runs processing pipeline."""
-    final_df = read_raw_data(
+    actors_df = read_raw_data(
         './data/raw/faceScrub/facescrub_actors.txt',
     )
+    actresses_df = read_raw_data(
+        './data/raw/faceScrub/facescrub_actresses.txt',
+    )
+    df = pd.concat([actors_df, actresses_df]).reset_index(drop=True)
+    
     final_df = get_downloaded_images_metadata(
         './data/processed/face_scrub',
-        final_df
+        df
     )
+    
     faces, labels = extract_faces(final_df)
-    create_dataset(faces, labels, save_path='')
+    create_dataset(faces, labels, save_path='./data/interim/mf_facescrub')
 
 
 if __name__ == '__main__':
