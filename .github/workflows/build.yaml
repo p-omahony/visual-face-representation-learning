@@ -47,7 +47,7 @@ jobs:
         run: docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache \
                             --cache-to=type=local,dest=/tmp/.buildx-cache \
                             -t face-learner-nonproduction-training \
-                            --platform linux/amd64 -f ./code/models/Dockerfile
+                            --platform linux/amd64 ./code/models/
                             
       - name: Push image to ECR repo
         run: docker tag face-learner-nonproduction-training:latest ${{ secrets.IMAGE_ECR_URI }} | docker push ${{ secrets.IMAGE_ECR_URI }}
